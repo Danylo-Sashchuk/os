@@ -56,6 +56,12 @@ public class STSQueue {
         return task;
     }
 
+    public void releaseCapacityPermit() {
+        capacitySemaphore.release();
+        System.out.println("CapacitySemaphore released by Task completion in STS Queue " + queueId
+                           + ". Available permits: " + capacitySemaphore.availablePermits());
+    }
+
     public int getQueueId() {
         return queueId;
     }

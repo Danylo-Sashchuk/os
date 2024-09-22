@@ -41,16 +41,17 @@ public class Processor extends Thread {
                 // Wait until a task is available
                 processorSemaphore.acquire();
 
-                // Dequeue a task
-                UserTask task = stsQueue.dequeueTask();
-
-                if (task != null) {
-                    // Execute the task
-                    task.executeOnProcessor(timeQuantum, processorId);
-                } else {
-                    // No task available, continue
-                    continue;
+                UserTask task = null;
+                while (task == null) {
+                    task = stsQueue.dequeueTask();
+                    if (task == null) {
+                        // No task available, wait again
+                        processorSemaphore.acquire();
+                    }
                 }
+
+                // Execute the task
+                task.executeOnProcessor(timeQuantum, processorId);
 
             } catch (InterruptedException e) {
                 e.printStackTrace();

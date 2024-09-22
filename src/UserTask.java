@@ -65,6 +65,7 @@ public class UserTask extends Thread{
             stsQueues[stsQueueId].enqueueTask(this);
         } else {
             executionSemaphore.release();
+            stsQueues[stsQueueId].releaseCapacityPermit();
         }
     }
 
