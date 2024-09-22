@@ -1,46 +1,51 @@
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Semaphore;
 
-/**
- * @author Danylo Sashchuk <p>
- * 9/22/24
- */
-
 public class Processor extends Thread {
-    private static Map<Integer, Integer> processorTimeQuantumMap = new HashMap<>();
+    private int processorId;
+    private ShortTermScheduler scheduler;
+    private UserTask currentTask;
+    private int timeQuantum;
+    private Semaphore taskAssignedSemaphore;
+    private Semaphore idleSemaphore;
 
-    static {
-        // Initialize processor time quantums
-        processorTimeQuantumMap.put(1, 2);
-        processorTimeQuantumMap.put(2, 4);
-        processorTimeQuantumMap.put(3, 3);
-        processorTimeQuantumMap.put(4, 2);
-        processorTimeQuantumMap.put(5, 2);
-        processorTimeQuantumMap.put(6, 4);
-        processorTimeQuantumMap.put(7, 3);
-        processorTimeQuantumMap.put(8, 2);
+    public Processor(int processorId, ShortTermScheduler scheduler) {
+        this.processorId = processorId;
+        this.scheduler = scheduler;
+        this.timeQuantum = ProcessorTimeQuantum.getTimeQuantum(processorId);
+        this.taskAssignedSemaphore = new Semaphore(0);
+        this.idleSemaphore = new Semaphore(1); // Starts as idle
     }
 
-    private int processorId;
-    private STSQueue stsQueue;
-    private Semaphore processorSemaphore;
-    private int timeQuantum;
+    public boolean isIdle() {
+        return idleSemaphore.availablePermits() > 0;
+    }
 
-    public Processor(int processorId, STSQueue stsQueue, Semaphore processorSemaphore) {
-        this.processorId = processorId;
-        this.stsQueue = stsQueue;
-        this.processorSemaphore = processorSemaphore;
-        this.timeQuantum = processorTimeQuantumMap.getOrDefault(processorId, 2);
+    public void assignTask(UserTask task) {
+        try {
+            // Wait until processor is idle
+            idleSemaphore.acquire();
+            this.currentTask = task;
+            // Signal the processor that a task is assigned
+            taskAssignedSemaphore.release();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void run() {
         while (true) {
             try {
-                UserTask task = stsQueue.dequeueTask(); // This will block until a task is available
-                task.executeOnProcessor(timeQuantum, processorId);
-            } catch (Exception e) {
+                // Wait until a task is assigned
+                taskAssignedSemaphore.acquire();
+
+                // Execute the task
+                currentTask.executeOnProcessor(timeQuantum, processorId);
+
+                // Mark the processor as idle
+                currentTask = null;
+                idleSemaphore.release();
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }

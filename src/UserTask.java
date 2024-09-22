@@ -2,39 +2,36 @@ import java.util.Random;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class UserTask extends Thread{
-    private static AtomicInteger taskCounter = new AtomicInteger(0);
+public class UserTask extends Thread {
+    private static int taskCounter = 0;
+    private static Semaphore taskCounterSemaphore = new Semaphore(1);
+
     private int taskId;
     private int totalExecutionUnits;
     private int remainingExecutionUnits;
     private Random rand;
     private int stsQueueId;
     private Semaphore executionSemaphore;
-    private STSQueue[] stsQueues;
+    private ShortTermScheduler[] schedulers;
     private LongTermScheduler lts;
+
     private long arrivalTime;
 
-    public UserTask(STSQueue[] stsQueues, LongTermScheduler lts) {
-        this.taskId = taskCounter.incrementAndGet();
+    public UserTask(ShortTermScheduler[] schedulers, LongTermScheduler lts) {
+        try {
+            taskCounterSemaphore.acquire();
+            this.taskId = ++taskCounter;
+            taskCounterSemaphore.release();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         this.rand = new Random();
         this.totalExecutionUnits = rand.nextInt(25) + 1;
         this.remainingExecutionUnits = totalExecutionUnits;
-        this.stsQueues = stsQueues;
+        this.schedulers = schedulers;
         this.lts = lts;
         this.executionSemaphore = new Semaphore(0);
-    }
-
-    public void setArrivalTime(long arrivalTime) {
-        this.arrivalTime = arrivalTime;
-    }
-
-    public long getArrivalTime() {
-        return arrivalTime;
-    }
-
-    public double getPriorityAge() {
-        long waitingTime = System.currentTimeMillis() - arrivalTime;
-        return remainingExecutionUnits - (waitingTime / 1000.0); // Adjust the divisor as needed
     }
 
     @Override
@@ -73,14 +70,20 @@ public class UserTask extends Thread{
         }
 
         if (remainingExecutionUnits > 0) {
-            System.out.println("User Task " + taskId + " re-entering STS " + stsQueueId
+            System.out.println("User Task " + taskId + " re-entering STS Queue " + stsQueueId
                                + " with remaining units: " + remainingExecutionUnits);
 
-            stsQueues[stsQueueId].enqueueTask(this, false);
+            schedulers[stsQueueId].getStsQueue().enqueueTask(this, false);
+            schedulers[stsQueueId].notifyTaskAvailable();
         } else {
             executionSemaphore.release();
-            stsQueues[stsQueueId].releaseCapacityPermit();
+            schedulers[stsQueueId].getStsQueue().releaseCapacityPermit();
         }
+    }
+
+    public double getPriorityAge() {
+        long waitingTime = System.currentTimeMillis() - arrivalTime;
+        return remainingExecutionUnits - (waitingTime / 1000.0);
     }
 
     public int getRemainingExecutionUnits() {
@@ -93,5 +96,13 @@ public class UserTask extends Thread{
 
     public void setStsQueueId(int id) {
         this.stsQueueId = id;
+    }
+
+    public void setArrivalTime(long arrivalTime) {
+        this.arrivalTime = arrivalTime;
+    }
+
+    public long getArrivalTime() {
+        return arrivalTime;
     }
 }

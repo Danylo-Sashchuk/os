@@ -1,35 +1,32 @@
-/**
- * @author Danylo Sashchuk <p>
- * 9/22/24
- */
-
 public class LongTermScheduler {
-    private STSQueue[] stsQueues;
+    private ShortTermScheduler[] schedulers;
     private int nextQueueIndex;
 
-    public LongTermScheduler(STSQueue[] stsQueues) {
-        this.stsQueues = stsQueues;
+    public LongTermScheduler(ShortTermScheduler[] schedulers) {
+        this.schedulers = schedulers;
         this.nextQueueIndex = 0;
     }
 
     public void enterSystem(UserTask task) {
         boolean enteredSTS = false;
         while (!enteredSTS) {
-            STSQueue stsQueue = stsQueues[nextQueueIndex];
-            nextQueueIndex = (nextQueueIndex + 1) % stsQueues.length; // Move to the next queue
+            ShortTermScheduler scheduler = schedulers[nextQueueIndex];
+            nextQueueIndex = (nextQueueIndex + 1) % schedulers.length; // Move to the next scheduler
+
+            STSQueue stsQueue = scheduler.getStsQueue();
 
             if (stsQueue.capacitySemaphore.availablePermits() > 0) {
                 task.setStsQueueId(stsQueue.getQueueId());
                 stsQueue.enqueueTask(task, true);
+                // Notify the STS that a task is available
+                scheduler.notifyTaskAvailable();
                 enteredSTS = true;
             } else {
                 // STS queue is full, wait and try again
                 System.out.println("User Task " + task.getTaskId() + " could not enter STS Queue "
                                    + stsQueue.getQueueId() + " (queue full), waiting...");
-                System.out.println("STS " + stsQueue.getQueueId() +
-                                   " waiting queue size = " + stsQueue.getTaskList().size() + " and 4 tasks are currently executing.");
                 try {
-                    Thread.sleep(500); // Wait before trying again
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
