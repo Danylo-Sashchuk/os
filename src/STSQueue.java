@@ -21,22 +21,34 @@ public class STSQueue {
         this.accessSemaphore = new Semaphore(1);
     }
 
-    public void enqueueTask(UserTask task) {
+    public void enqueueTask(UserTask task, boolean isNewTask) {
         try {
-            capacitySemaphore.acquire();
+            if (isNewTask) {
+                capacitySemaphore.acquire();
+            }
+
             accessSemaphore.acquire();
 
             taskList.add(task);
             taskList.sort(Comparator.comparingInt(UserTask::getRemainingExecutionUnits));
 
             accessSemaphore.release();
-            System.out.println("User Task " + task.getTaskId() + " entered STS Queue " + queueId + ". Queue has " + taskList.size() + " tasks.");
 
+            System.out.println("User Task " + task.getTaskId() + " entered STS Queue " + queueId
+                               + ". Queue has " + taskList.size() + " tasks.");
+
+            // Notify processors that a task is available
             ProcessorCoordinator.getInstance().notifyTaskAvailable(queueId);
 
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void releaseCapacityPermit() {
+        capacitySemaphore.release();
+        System.out.println("CapacitySemaphore released by Task completion in STS Queue " + queueId
+                           + ". Available permits: " + capacitySemaphore.availablePermits());
     }
 
     public UserTask dequeueTask() {
@@ -46,7 +58,6 @@ public class STSQueue {
 
             if (!taskList.isEmpty()) {
                 task = taskList.remove(0);
-                capacitySemaphore.release();
             }
 
             accessSemaphore.release();
@@ -54,12 +65,6 @@ public class STSQueue {
             e.printStackTrace();
         }
         return task;
-    }
-
-    public void releaseCapacityPermit() {
-        capacitySemaphore.release();
-        System.out.println("CapacitySemaphore released by Task completion in STS Queue " + queueId
-                           + ". Available permits: " + capacitySemaphore.availablePermits());
     }
 
     public int getQueueId() {

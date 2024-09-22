@@ -1,5 +1,3 @@
-import java.util.Random;
-
 /**
  * @author Danylo Sashchuk <p>
  * 9/22/24
@@ -22,7 +20,7 @@ public class LongTermScheduler {
 
             if (stsQueue.capacitySemaphore.availablePermits() > 0) {
                 task.setStsQueueId(stsQueue.getQueueId());
-                stsQueue.enqueueTask(task);
+                stsQueue.enqueueTask(task, true);
                 enteredSTS = true;
             } else {
                 // STS queue is full, wait and try again

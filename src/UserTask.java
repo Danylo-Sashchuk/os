@@ -62,10 +62,11 @@ public class UserTask extends Thread{
             System.out.println("User Task " + taskId + " re-entering STS Queue " + stsQueueId
                                + " with remaining units: " + remainingExecutionUnits);
 
-            stsQueues[stsQueueId].enqueueTask(this);
+            stsQueues[stsQueueId].enqueueTask(this, false);
         } else {
             executionSemaphore.release();
             stsQueues[stsQueueId].releaseCapacityPermit();
+//            System.out.println("User Task " + taskId + " has completed execution and is leaving the system.");
         }
     }
 

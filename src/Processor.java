@@ -38,22 +38,9 @@ public class Processor extends Thread {
     public void run() {
         while (true) {
             try {
-                // Wait until a task is available
-                processorSemaphore.acquire();
-
-                UserTask task = null;
-                while (task == null) {
-                    task = stsQueue.dequeueTask();
-                    if (task == null) {
-                        // No task available, wait again
-                        processorSemaphore.acquire();
-                    }
-                }
-
-                // Execute the task
+                UserTask task = stsQueue.dequeueTask(); // This will block until a task is available
                 task.executeOnProcessor(timeQuantum, processorId);
-
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
