@@ -13,12 +13,14 @@ public class STSQueue {
     Semaphore capacitySemaphore;
     private Semaphore accessSemaphore;
     private int queueId;
+    private Semaphore taskAvailableSemaphore; // New semaphore
 
     public STSQueue(int queueId) {
         this.queueId = queueId;
         this.taskList = new LinkedList<>();
         this.capacitySemaphore = new Semaphore(15);
         this.accessSemaphore = new Semaphore(1);
+        this.taskAvailableSemaphore = new Semaphore(0); // In
     }
 
     public void enqueueTask(UserTask task, boolean isNewTask) {
@@ -33,6 +35,7 @@ public class STSQueue {
             taskList.sort(Comparator.comparingInt(UserTask::getRemainingExecutionUnits));
 
             accessSemaphore.release();
+            taskAvailableSemaphore.release();
 
             System.out.println("User Task " + task.getTaskId() + " entered STS Queue " + queueId
                                + ". Queue has " + taskList.size() + " tasks.");
@@ -54,6 +57,7 @@ public class STSQueue {
     public UserTask dequeueTask() {
         UserTask task = null;
         try {
+            taskAvailableSemaphore.acquire();
             accessSemaphore.acquire();
 
             if (!taskList.isEmpty()) {
