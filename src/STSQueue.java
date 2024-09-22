@@ -5,15 +5,15 @@ import java.util.concurrent.Semaphore;
 
 public class STSQueue {
     private List<UserTask> taskList;
-    private Semaphore capacitySemaphore;
+    Semaphore capacitySemaphore;
     private Semaphore accessSemaphore;
     private int queueId;
     private Semaphore taskAvailableSemaphore;
 
-    public STSQueue(int queueId) {
+    public STSQueue(int queueId, int capacity) {
         this.queueId = queueId;
         this.taskList = new LinkedList<>();
-        this.capacitySemaphore = new Semaphore(15);
+        this.capacitySemaphore = new Semaphore(capacity);
         this.accessSemaphore = new Semaphore(1);
         this.taskAvailableSemaphore = new Semaphore(0);
     }

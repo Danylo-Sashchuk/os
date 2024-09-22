@@ -5,15 +5,14 @@ public class ShortTermScheduler extends Thread {
     private Processor[] processors;
     private Semaphore processorSemaphore; // To signal when tasks are available
 
-    public ShortTermScheduler(int schedulerId) {
-        this.stsQueue = new STSQueue(schedulerId);
+    public ShortTermScheduler(int schedulerId, int queueCapacity, long executionTimePerUnit) {
+        this.stsQueue = new STSQueue(schedulerId, queueCapacity);
         this.processorSemaphore = new Semaphore(0);
 
         // Initialize four processors for this STS
         processors = new Processor[4];
         for (int i = 0; i < 4; i++) {
-            int processorId = (schedulerId * 4) + i + 1;
-            processors[i] = new Processor(processorId, this);
+            processors[i] = new Processor(i, this, executionTimePerUnit);
             processors[i].start();
         }
     }

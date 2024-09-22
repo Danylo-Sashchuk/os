@@ -7,13 +7,15 @@ public class Processor extends Thread {
     private int timeQuantum;
     private Semaphore taskAssignedSemaphore;
     private Semaphore idleSemaphore;
+    private long executionTimePerUnit; // Added
 
-    public Processor(int processorId, ShortTermScheduler scheduler) {
+    public Processor(int processorId, ShortTermScheduler scheduler, long executionTimePerUnit) {
         this.processorId = processorId;
         this.scheduler = scheduler;
-        this.timeQuantum = ProcessorTimeQuantum.getTimeQuantum(processorId);
+        this.timeQuantum = getTimeQuantum(processorId);
         this.taskAssignedSemaphore = new Semaphore(0);
         this.idleSemaphore = new Semaphore(1); // Starts as idle
+        this.executionTimePerUnit = executionTimePerUnit; // Added
     }
 
     public boolean isIdle() {
@@ -40,7 +42,7 @@ public class Processor extends Thread {
                 taskAssignedSemaphore.acquire();
 
                 // Execute the task
-                currentTask.executeOnProcessor(timeQuantum, processorId);
+                currentTask.executeOnProcessor(timeQuantum, processorId, executionTimePerUnit);
 
                 // Mark the processor as idle
                 currentTask = null;
@@ -49,5 +51,13 @@ public class Processor extends Thread {
                 e.printStackTrace();
             }
         }
+    }
+
+    private int getTimeQuantum(int processorId) {
+        return switch (processorId) {
+            case 2 -> 4;
+            case 3 -> 3;
+            default -> 2;
+        };
     }
 }

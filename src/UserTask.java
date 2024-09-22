@@ -1,6 +1,5 @@
 import java.util.Random;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class UserTask extends Thread {
     private static int taskCounter = 0;
@@ -56,7 +55,7 @@ public class UserTask extends Thread {
         System.out.println("User Task " + taskId + " has completed execution and is leaving the system.");
     }
 
-    public void executeOnProcessor(int timeUnits, int processorId) {
+    public void executeOnProcessor(int timeUnits, int processorId, long executionTimePerUnit) {
         int executedUnits = Math.min(timeUnits, remainingExecutionUnits);
         remainingExecutionUnits -= executedUnits;
 
@@ -64,7 +63,7 @@ public class UserTask extends Thread {
                            + " for " + executedUnits + " units. Remaining units: " + remainingExecutionUnits);
 
         try {
-            Thread.sleep(executedUnits * 1000L);
+            Thread.sleep(executedUnits * executionTimePerUnit);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -86,10 +85,6 @@ public class UserTask extends Thread {
         return remainingExecutionUnits - (waitingTime / 1000.0);
     }
 
-    public int getRemainingExecutionUnits() {
-        return remainingExecutionUnits;
-    }
-
     public int getTaskId() {
         return taskId;
     }
@@ -100,9 +95,5 @@ public class UserTask extends Thread {
 
     public void setArrivalTime(long arrivalTime) {
         this.arrivalTime = arrivalTime;
-    }
-
-    public long getArrivalTime() {
-        return arrivalTime;
     }
 }
