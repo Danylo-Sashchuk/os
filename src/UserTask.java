@@ -12,6 +12,7 @@ public class UserTask extends Thread{
     private Semaphore executionSemaphore;
     private STSQueue[] stsQueues;
     private LongTermScheduler lts;
+    private long arrivalTime;
 
     public UserTask(STSQueue[] stsQueues, LongTermScheduler lts) {
         this.taskId = taskCounter.incrementAndGet();
@@ -21,6 +22,19 @@ public class UserTask extends Thread{
         this.stsQueues = stsQueues;
         this.lts = lts;
         this.executionSemaphore = new Semaphore(0);
+    }
+
+    public void setArrivalTime(long arrivalTime) {
+        this.arrivalTime = arrivalTime;
+    }
+
+    public long getArrivalTime() {
+        return arrivalTime;
+    }
+
+    public double getPriorityAge() {
+        long waitingTime = System.currentTimeMillis() - arrivalTime;
+        return remainingExecutionUnits - (waitingTime / 1000.0); // Adjust the divisor as needed
     }
 
     @Override
@@ -59,14 +73,13 @@ public class UserTask extends Thread{
         }
 
         if (remainingExecutionUnits > 0) {
-            System.out.println("User Task " + taskId + " re-entering STS Queue " + stsQueueId
+            System.out.println("User Task " + taskId + " re-entering STS " + stsQueueId
                                + " with remaining units: " + remainingExecutionUnits);
 
             stsQueues[stsQueueId].enqueueTask(this, false);
         } else {
             executionSemaphore.release();
             stsQueues[stsQueueId].releaseCapacityPermit();
-//            System.out.println("User Task " + taskId + " has completed execution and is leaving the system.");
         }
     }
 

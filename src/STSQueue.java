@@ -27,20 +27,20 @@ public class STSQueue {
         try {
             if (isNewTask) {
                 capacitySemaphore.acquire();
+                task.setArrivalTime(System.currentTimeMillis());
             }
 
             accessSemaphore.acquire();
 
             taskList.add(task);
-            taskList.sort(Comparator.comparingInt(UserTask::getRemainingExecutionUnits));
+            taskList.sort(Comparator.comparingDouble(UserTask::getPriority));
 
             accessSemaphore.release();
             taskAvailableSemaphore.release();
 
-            System.out.println("User Task " + task.getTaskId() + " entered STS Queue " + queueId
-                               + ". Queue has " + taskList.size() + " tasks.");
+            System.out.println("User Task " + task.getTaskId() + " entered STS " + queueId
+                               + ". STS has " + taskList.size() + " tasks.");
 
-            // Notify processors that a task is available
             ProcessorCoordinator.getInstance().notifyTaskAvailable(queueId);
 
         } catch (InterruptedException e) {
