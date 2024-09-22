@@ -25,7 +25,7 @@ public class Main {
 
             // Simulate random arrival of tasks
             try {
-                Thread.sleep(new Random().nextInt(200)); // Up to 0.5 second
+                Thread.sleep(new Random().nextInt(100)); // Up to 0.5 second
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

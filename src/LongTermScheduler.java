@@ -26,7 +26,8 @@ public class LongTermScheduler {
                 // STS queue is full, wait and try again
                 System.out.println("User Task " + task.getTaskId() + " could not enter STS Queue "
                                    + stsQueue.getQueueId() + " (queue full), waiting...");
-                System.out.println("Queue size: " + stsQueue.getTaskList().size());
+                System.out.println("Queue " + stsQueue.getQueueId() +
+                                   " waiting queue = " + stsQueue.getTaskList().size() + " and 4 tasks are running.");
                 try {
                     Thread.sleep(500); // Wait before trying again
                 } catch (InterruptedException e) {
