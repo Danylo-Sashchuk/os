@@ -53,7 +53,7 @@ public class UserTask extends Thread{
                            + " for " + executedUnits + " units. Remaining units: " + remainingExecutionUnits);
 
         try {
-            Thread.sleep(executedUnits * 300);
+            Thread.sleep(executedUnits * 500L);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

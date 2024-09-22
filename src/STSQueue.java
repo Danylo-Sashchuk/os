@@ -30,7 +30,7 @@ public class STSQueue {
             taskList.sort(Comparator.comparingInt(UserTask::getRemainingExecutionUnits));
 
             accessSemaphore.release();
-            System.out.println("User Task " + task.getTaskId() + " entered STS Queue " + queueId);
+            System.out.println("User Task " + task.getTaskId() + " entered STS Queue " + queueId + ". Queue has " + taskList.size() + " tasks.");
 
             ProcessorCoordinator.getInstance().notifyTaskAvailable(queueId);
 
@@ -70,5 +70,9 @@ public class STSQueue {
             e.printStackTrace();
         }
         return empty;
+    }
+
+    public List<UserTask> getTaskList() {
+        return taskList;
     }
 }

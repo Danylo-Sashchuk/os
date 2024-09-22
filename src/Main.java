@@ -18,14 +18,14 @@ public class Main {
 
         // Create and start user tasks
         List<UserTask> userTasks = new ArrayList<>();
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 60; i++) {
             UserTask task = new UserTask(stsQueues, lts);
             userTasks.add(task);
             task.start();
 
             // Simulate random arrival of tasks
             try {
-                Thread.sleep(new Random().nextInt(500)); // Up to 0.5 second
+                Thread.sleep(new Random().nextInt(200)); // Up to 0.5 second
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
