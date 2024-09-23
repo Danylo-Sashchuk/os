@@ -3,16 +3,15 @@ import java.util.concurrent.Semaphore;
 public class ShortTermScheduler extends Thread {
     private STSQueue stsQueue;
     private Processor[] processors;
-    private Semaphore processorSemaphore; // To signal when tasks are available
+    private Semaphore processorSemaphore; // signal when tasks are available
 
     public ShortTermScheduler(int schedulerId, int queueCapacity, long executionTimePerUnit) {
         this.stsQueue = new STSQueue(schedulerId, queueCapacity);
         this.processorSemaphore = new Semaphore(0);
 
-        // Initialize four processors for this STS
         processors = new Processor[4];
         for (int i = 0; i < 4; i++) {
-            processors[i] = new Processor(i, this, executionTimePerUnit);
+            processors[i] = new Processor(i, executionTimePerUnit);
             processors[i].start();
         }
     }
@@ -22,7 +21,7 @@ public class ShortTermScheduler extends Thread {
     }
 
     public void notifyTaskAvailable() {
-        // Release a permit to signal that a task is available
+        // permit to signal that task available
         processorSemaphore.release();
     }
 
@@ -30,12 +29,10 @@ public class ShortTermScheduler extends Thread {
     public void run() {
         while (true) {
             try {
-                // Wait until tasks are available
                 processorSemaphore.acquire();
 
                 UserTask task = stsQueue.dequeueTask();
                 if (task != null) {
-                    // Assign task to an available processor
                     boolean assigned = false;
                     while (!assigned) {
                         for (Processor processor : processors) {
@@ -46,7 +43,7 @@ public class ShortTermScheduler extends Thread {
                             }
                         }
                         if (!assigned) {
-                            Thread.sleep(100); // Wait before checking again
+                            Thread.sleep(100);
                         }
                     }
                 }

@@ -20,11 +20,10 @@ public class LongTermScheduler {
             if (stsQueue.capacitySemaphore.availablePermits() > 0) {
                 task.setStsQueueId(stsQueue.getQueueId());
                 stsQueue.enqueueTask(task, true);
-                // Notify the STS that a task is available
+
                 scheduler.notifyTaskAvailable();
                 enteredSTS = true;
             } else {
-                // STS queue is full, wait and try again
                 System.out.println("User Task " + task.getTaskId() + " could not enter STS Queue "
                                    + stsQueue.getQueueId() + " (queue full), waiting...");
                 try {

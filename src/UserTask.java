@@ -4,7 +4,6 @@ import java.util.concurrent.Semaphore;
 public class UserTask extends Thread {
     private static int taskCounter = 0;
     private static Semaphore taskCounterSemaphore = new Semaphore(1);
-
     private int taskId;
     private int totalExecutionUnits;
     private int remainingExecutionUnits;
@@ -13,7 +12,6 @@ public class UserTask extends Thread {
     private Semaphore executionSemaphore;
     private ShortTermScheduler[] schedulers;
     private LongTermScheduler lts;
-
     private long arrivalTime;
 
     public UserTask(ShortTermScheduler[] schedulers, LongTermScheduler lts) {

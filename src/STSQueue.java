@@ -28,12 +28,12 @@ public class STSQueue {
             accessSemaphore.acquire();
 
             taskList.add(task);
-            taskList.sort(Comparator.comparingDouble(UserTask::getPriorityAge));
+            taskList.sort(Comparator.comparingDouble(UserTask::getPriorityAge)); // sort with age
 
             accessSemaphore.release();
             taskAvailableSemaphore.release();
 
-            System.out.println("User Task " + task.getTaskId() + " entered STS Queue " + queueId
+            System.out.println("User Task " + task.getTaskId() + " entered STS " + queueId
                                + ". Queue has " + taskList.size() + " tasks.");
 
         } catch (InterruptedException e) {
